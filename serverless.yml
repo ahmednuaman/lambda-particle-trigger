@@ -1,0 +1,40 @@
+service: lambda-particle-trigger
+
+provider:
+  region: eu-west-2
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 128
+  timeout: 7
+  tracing: true
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "xray:PutTraceSegments"
+        - "xray:PutTelemetryRecords"
+      Resource:
+        - "*"
+  stage: ${opt:stage, 'staging'}
+  environment:
+    CONFIG: ${file(./config.json)}
+    STAGE: ${self:provider.stage}
+    SERVICE: ${self:service}
+
+functions:
+  cron:
+    handler: src/server/index.handler
+    timeout: 29
+    events:
+      - schedule: cron(0 01 * * ? *)
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+  webpack:
+    includeModules:
+      forceExclude:
+        - aws-sdk
+
+  serverless-offline:
+    port: 4000
