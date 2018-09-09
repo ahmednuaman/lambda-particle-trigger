@@ -17,10 +17,11 @@ provider:
   stage: ${opt:stage, 'staging'}
   environment:
     CONFIG: ${file(./config.json.config)}
+    STAGE: ${self:provider.stage}
 
 functions:
   set:
-    handler: src/index.set
+    handler: src/index.handler
     events:
       - schedule:
           rate: cron(0 15 * * ? *)
@@ -30,8 +31,8 @@ functions:
           rate: cron(30 20 * * ? *)
           input:
             data: false
-toggle:
-    handler: src/index.toggle
+  toggle:
+    handler: src/index.handler
     events:
       - iot:
           sql: "SELECT * FROM 'iotbutton/${self:custom.iotThingDSN}'"
@@ -96,7 +97,17 @@ resources:
 plugins:
   - serverless-webpack
   - serverless-dynamodb-local
-  - serverless-offline
+
+custom:
+  iotThingDSN: ${file(./iot-dash-certs/iot-thing-dsn.txt)}
+  iotThingCertARN: ${file(./iot-dash-certs/iot-thing-cert-arn.txt)}
+
+  dynamodb:
+    start:
+      port: 18764
+      inMemory: true
+      migrate: true
+      seed: true
 
   webpack:
     includeModules:

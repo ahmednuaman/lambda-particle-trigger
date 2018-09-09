@@ -1,4 +1,9 @@
 {
+  "aws": {
+    "accessKeyId": "",
+    "region": "eu-west-2",
+    "secretAccessKey": ""
+  },
   "particle": {
     "access_token": "",
     "particles": [""]

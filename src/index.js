@@ -1,53 +1,46 @@
 import { DynamoDB } from 'aws-sdk'
+import _ from 'lodash'
+import AWSXRay from 'aws-xray-sdk'
 import async from 'async'
 import request from 'request'
 
-const {
-  particle: config
-} = JSON.parse(process.env.CONFIG)
+const config = JSON.parse(process.env.CONFIG)
+const endpoint = process.env.STAGE === 'dev' ? 'http://localhost:18764' : undefined
 
-export const handler = async ({ data }, context, done) => {
-  let state
+export const handler = async (event, context, done) => {
+  let newState = _.get(event, 'data')
 
-  if (data) {
-    state = data.state
-  } else {
-    const doc = new DynamoDB.DocumentClient({ service: new DynamoDB({...config.aws, endpoint}) })
-    const params = {
-      TableName: 'iot_house',
-      Key: {
-        button: 'garden_lights'
-      }
+  const doc = new DynamoDB.DocumentClient({ service: new DynamoDB({ ...config.aws, endpoint }) })
+  const params = {
+    TableName: 'iot_house',
+    Key: {
+      button: 'garden_lights'
     }
+  }
 
-    AWSXRay.captureAWSClient(doc.service)
+  AWSXRay.captureAWSClient(doc.service)
 
+  if (_.isUndefined(newState)) {
     try {
-      state = await new Promise((resolve, reject) =>
-        doc.get(params, (error, { Item: item }) => {
-          if (error || !item) {
+      newState = await new Promise((resolve, reject) =>
+        doc.get(params, (error, { Item }) => {
+          if (error) {
             return reject(error || 'Item not found')
           }
 
-          const {
-            state
-          } = item
+          let newState
 
-          const newState = !state
+          if (Item) {
+            const {
+              state
+            } = Item
 
-          doc.put({
-            TableName: params.TableName,
-            Item: {
-              ...params.Key,
-              state: newState
-            }
-          }, (error) => {
-            if (error) {
-              return reject(error)
-            }
+            newState = !state
+          } else {
+            newState = false
+          }
 
-            resolve(newState)
-          })
+          resolve(newState)
         })
       )
     } catch (error) {
@@ -55,16 +48,42 @@ export const handler = async ({ data }, context, done) => {
     }
   }
 
-  if (config && state) {
-    const update = (done, particle) => {
-      request.post(`https://api.particle.io/v1/devices/${particle}/relay`, {
-        form: {
-          access_token: config.access_token,
-          arg: state
+  try {
+    await new Promise((resolve, reject) =>
+      doc.put({
+        TableName: params.TableName,
+        Item: {
+          ...params.Key,
+          state: newState
         }
-      }, done)
-    }
+      }, (error) => {
+        if (error) {
+          return reject(error)
+        }
 
-    async.parallel(config.particles.map((done) => (particle) => update(done, particle)), done)
+        resolve(newState)
+      })
+    )
+
+    if (config.particle) {
+      const update = (done, particle) => {
+        request.post(`https://api.particle.io/v1/devices/${particle}/relay`, {
+          form: {
+            access_token: config.particle.access_token,
+            arg: Number(newState)
+          }
+        }, done)
+      }
+
+      async.parallel(
+        config.particle.particles.map((particle) => (done) => update(done, particle)),
+        (error, results) => {
+          console.log(error, results)
+          done(error, results)
+        }
+      )
+    }
+  } catch (error) {
+    return done(error)
   }
 }
