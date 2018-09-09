@@ -39,48 +39,48 @@ functions:
 
 resources:
   Resources:
-    IoTThing:
-      Type: AWS::IoT::Thing
-      Properties:
-        ThingName:
-          Fn::Join:
-            - ''
-            - - iotbutton_
-              - ${self:custom.iotThingDSN}
+    # IoTThing:
+    #   Type: AWS::IoT::Thing
+    #   Properties:
+    #     ThingName:
+    #       Fn::Join:
+    #         - ''
+    #         - - iotbutton_
+    #           - ${self:custom.iotThingDSN}
 
-    IoTPolicy:
-      Type: AWS::IoT::Policy
-      Properties:
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Action: iot:Publish
-            Effect: Allow
-            Resource:
-              Fn::Join:
-                - ''
-                - - 'arn:aws:iot:'
-                  - Ref: AWS::Region
-                  - ":"
-                  - Ref: AWS::AccountId
-                  - ":topic/iotbutton/"
-                  - ${self:custom.iotThingDSN}
+    # IoTPolicy:
+    #   Type: AWS::IoT::Policy
+    #   Properties:
+    #     PolicyDocument:
+    #       Version: '2012-10-17'
+    #       Statement:
+    #       - Action: iot:Publish
+    #         Effect: Allow
+    #         Resource:
+    #           Fn::Join:
+    #             - ''
+    #             - - 'arn:aws:iot:'
+    #               - Ref: AWS::Region
+    #               - ":"
+    #               - Ref: AWS::AccountId
+    #               - ":topic/iotbutton/"
+    #               - ${self:custom.iotThingDSN}
 
-    IoTPolicyPrincipalAttachment:
-      Type: AWS::IoT::PolicyPrincipalAttachment
-      Properties:
-        PolicyName:
-          Ref: IoTPolicy
-        Principal: ${self:custom.iotThingCertARN}
+    # IoTPolicyPrincipalAttachment:
+    #   Type: AWS::IoT::PolicyPrincipalAttachment
+    #   Properties:
+    #     PolicyName:
+    #       Ref: IoTPolicy
+    #     Principal: ${self:custom.iotThingCertARN}
 
-    IoTThingPrincipalAttachment:
-      Type: AWS::IoT::ThingPrincipalAttachment
-      Properties:
-        Principal: ${self:custom.iotThingCertARN}
-        ThingName:
-          Ref: IoTThing
+    # IoTThingPrincipalAttachment:
+    #   Type: AWS::IoT::ThingPrincipalAttachment
+    #   Properties:
+    #     Principal: ${self:custom.iotThingCertARN}
+    #     ThingName:
+    #       Ref: IoTThing
 
-    iotHouse:
+    IotHouseDB:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: iot_house
