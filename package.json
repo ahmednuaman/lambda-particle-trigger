@@ -19,6 +19,7 @@
   "homepage": "https://github.com/ahmednuaman/lambda-particle-trigger#readme",
   "dependencies": {
     "async": "^2.6.1",
+    "aws-xray-sdk": "^2.0.0",
     "request": "^2.88.0"
   }
 }
