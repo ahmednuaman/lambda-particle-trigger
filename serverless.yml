@@ -25,11 +25,11 @@ functions:
       - schedule:
           rate: cron(0 15 * * ? *)
           input:
-            data: 1
+            data: true
       - schedule:
           rate: cron(30 20 * * ? *)
           input:
-            data: 0
+            data: false
 toggle:
     handler: src/index.toggle
     events:

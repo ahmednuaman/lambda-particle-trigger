@@ -4,15 +4,21 @@
   "description": "A simple lambda to trigger particles",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "serverless package",
+    "deploy": "AWS_SDK_LOAD_CONFIG=1 AWS_SHARED_CREDENTIALS_FILE=./.aws-credentials NODE_ENV=production serverless deploy --verbose",
+    "invoke:set": "serverless invoke local --function set",
+    "invoke:set:off": "npm run invoke:set -- --path test/event/off.json",
+    "invoke:set:on": "npm run invoke:set -- --path test/event/on.json",
+    "invoke:toggle": "serverless invoke local --function toggle",
+    "test": "standard --fix --verbose | snazzy"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ahmednuaman/lambda-particle-trigger.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Ahmed Nuaman (ahmed@ahmednuaman.com)",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ahmednuaman/lambda-particle-trigger/issues"
   },
@@ -21,5 +27,35 @@
     "async": "^2.6.1",
     "aws-xray-sdk": "^2.0.0",
     "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.6.1",
+    "json-loader": "^0.5.7",
+    "serverless": "^1.26.1",
+    "serverless-webpack": "^5.0.0",
+    "snazzy": "^7.1.1",
+    "standard": "^11.0.0",
+    "webpack": "^4.1.1",
+    "webpack-node-externals": "^1.6.0"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "targets": {
+            "node": "8.10"
+          }
+        }
+      ]
+    ]
+  },
+  "standard": {
+    "ignore": [
+      "build"
+    ]
   }
 }
