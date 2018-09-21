@@ -34,7 +34,7 @@ export const handler = async (event, context, done) => {
 
   try {
     await new Promise((resolve, reject) =>
-      client.getParameter({
+      client.putParameter({
         ...params,
         Type: 'String',
         Value: String(newState)
