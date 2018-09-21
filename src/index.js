@@ -1,48 +1,32 @@
-import { DynamoDB } from 'aws-sdk'
+import { SSM } from 'aws-sdk'
 import _ from 'lodash'
-import AWSXRay from 'aws-xray-sdk'
 import async from 'async'
 import request from 'request'
 
 const config = JSON.parse(process.env.CONFIG)
-const endpoint = process.env.STAGE === 'dev' ? 'http://localhost:18764' : undefined
 
 export const handler = async (event, context, done) => {
-  let newState = _.get(event, 'data')
-
-  const doc = new DynamoDB.DocumentClient({ service: new DynamoDB({ ...config.aws, endpoint }) })
   const params = {
-    TableName: 'iot_house',
-    Key: {
-      button: 'garden_lights'
-    }
+    Name: 'garden-lights'
   }
 
-  AWSXRay.captureAWSClient(doc.service)
+  let newState = _.get(event, 'data')
+
+  const client = new SSM()
 
   if (_.isUndefined(newState)) {
     try {
-      newState = await new Promise((resolve, reject) =>
-        doc.get(params, (error, { Item }) => {
+      newState = await new Promise((resolve, reject) => {
+        client.getParameter(params, (error, data) => {
           if (error) {
-            return reject(error || 'Item not found')
+            return reject(error)
           }
 
-          let newState
+          const state = Number(!Number(data.Parameter.Value))
 
-          if (Item) {
-            const {
-              state
-            } = Item
-
-            newState = !state
-          } else {
-            newState = false
-          }
-
-          resolve(newState)
+          resolve(state)
         })
-      )
+      })
     } catch (error) {
       return done(error)
     }
@@ -50,12 +34,10 @@ export const handler = async (event, context, done) => {
 
   try {
     await new Promise((resolve, reject) =>
-      doc.put({
-        TableName: params.TableName,
-        Item: {
-          ...params.Key,
-          state: newState
-        }
+      client.getParameter({
+        ...params,
+        Type: 'String',
+        Value: String(newState)
       }, (error) => {
         if (error) {
           return reject(error)

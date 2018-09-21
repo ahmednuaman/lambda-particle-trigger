@@ -39,6 +39,14 @@ functions:
 
 resources:
   Resources:
+    IotButtonGardenLights:
+      Type: "AWS::SSM::Parameter"
+      Properties:
+        Description: IotButtonGardenLights
+        Name: ${self:service}-${self:provider.stage}-garden-lights
+        Type: String
+        Value: "0"
+
     # IoTThing:
     #   Type: AWS::IoT::Thing
     #   Properties:
@@ -80,34 +88,14 @@ resources:
     #     ThingName:
     #       Ref: IoTThing
 
-    IotHouseDB:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: iot_house
-        AttributeDefinitions:
-          - AttributeName: button
-            AttributeType: S
-        KeySchema:
-          - AttributeName: button
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
+
 
 plugins:
   - serverless-webpack
-  - serverless-dynamodb-local
 
 custom:
   iotThingDSN: ${file(./iot-dash-certs/iot-thing-dsn.txt)}
   iotThingCertARN: ${file(./iot-dash-certs/iot-thing-cert-arn.txt)}
-
-  dynamodb:
-    start:
-      port: 18764
-      inMemory: true
-      migrate: true
-      seed: true
 
   webpack:
     includeModules:
