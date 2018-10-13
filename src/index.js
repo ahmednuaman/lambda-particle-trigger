@@ -12,7 +12,7 @@ export const handler = async (event, context, done) => {
 
   let newState = _.get(event, 'data')
 
-  const client = new SSM()
+  const client = new SSM(config.aws)
 
   if (_.isUndefined(newState)) {
     try {
