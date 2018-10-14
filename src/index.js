@@ -14,6 +14,8 @@ export const handler = async (event, context, done) => {
 
   const client = new SSM(config.aws)
 
+  console.log({ newState })
+
   if (_.isUndefined(newState)) {
     try {
       newState = await new Promise((resolve, reject) => {
@@ -28,9 +30,12 @@ export const handler = async (event, context, done) => {
         })
       })
     } catch (error) {
+      console.log({ error })
       return done(error)
     }
   }
+
+  console.log({ newState })
 
   try {
     await new Promise((resolve, reject) =>
@@ -67,6 +72,7 @@ export const handler = async (event, context, done) => {
       )
     }
   } catch (error) {
+    console.log({ error })
     return done(error)
   }
 }
