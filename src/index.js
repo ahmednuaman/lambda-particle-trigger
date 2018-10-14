@@ -36,6 +36,7 @@ export const handler = async (event, context, done) => {
     await new Promise((resolve, reject) =>
       client.putParameter({
         ...params,
+        Overwrite: true,
         Type: 'String',
         Value: String(newState)
       }, (error) => {
