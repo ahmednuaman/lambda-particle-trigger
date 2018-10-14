@@ -6,6 +6,8 @@ import request from 'request'
 const config = JSON.parse(process.env.CONFIG)
 
 export const handler = async (event, context, done) => {
+  console.log(config)
+
   const params = {
     Name: 'garden-lights'
   }
