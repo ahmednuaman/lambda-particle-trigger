@@ -6,8 +6,6 @@ import request from 'request'
 const config = JSON.parse(process.env.CONFIG)
 
 export const handler = async (event, context, done) => {
-  console.log(config)
-
   const params = {
     Name: 'garden-lights'
   }
@@ -37,8 +35,6 @@ export const handler = async (event, context, done) => {
     }
   }
 
-  console.log({ newState })
-
   try {
     await new Promise((resolve, reject) =>
       client.putParameter({
@@ -57,11 +53,13 @@ export const handler = async (event, context, done) => {
 
     if (config.particle) {
       const update = (done, particle) => {
+        console.log({particle})
         request.post(`https://api.particle.io/v1/devices/${particle}/relay`, {
           form: {
             access_token: config.particle.access_token,
             arg: Number(newState)
-          }
+          },
+          timeout: 4000
         }, done)
       }
 
@@ -72,6 +70,8 @@ export const handler = async (event, context, done) => {
           done(error, results)
         }
       )
+    } else {
+      done()
     }
   } catch (error) {
     console.log({ error })
