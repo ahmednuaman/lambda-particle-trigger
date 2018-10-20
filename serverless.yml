@@ -16,7 +16,7 @@ provider:
         - "*"
   stage: ${opt:stage, 'staging'}
   environment:
-    CONFIG: ${file(./config.json.config)}
+    CONFIG: ${env:CONFIG}
     STAGE: ${self:provider.stage}
 
 functions:
@@ -93,9 +93,9 @@ resources:
 plugins:
   - serverless-webpack
 
-custom:
-  iotThingDSN: ${file(./iot-dash-certs/iot-thing-dsn.txt)}
-  iotThingCertARN: ${file(./iot-dash-certs/iot-thing-cert-arn.txt)}
+# custom:
+#   iotThingDSN: ${file(./iot-dash-certs/iot-thing-dsn.txt)}
+#   iotThingCertARN: ${file(./iot-dash-certs/iot-thing-cert-arn.txt)}
 
   webpack:
     includeModules:
