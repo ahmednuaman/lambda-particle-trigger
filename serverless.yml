@@ -31,11 +31,11 @@ functions:
           rate: cron(30 20 * * ? *)
           input:
             data: false
-  toggle:
-    handler: src/index.handler
-    events:
-      - iot:
-          sql: "SELECT * FROM 'iotbutton/${self:custom.iotThingDSN}'"
+  # toggle:
+  #   handler: src/index.handler
+  #   events:
+  #     - iot:
+  #         sql: "SELECT * FROM 'iotbutton/${self:custom.iotThingDSN}'"
 
 resources:
   Resources:
