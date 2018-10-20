@@ -16,7 +16,7 @@ jobs:
           command: nvm install && nvm alias default $(cat .nvmrc) && npm install -g npmg
       - run:
           name: Install Dependencies
-          command: npm install -g ask-cli && npm install
+          command: npm install
       - run:
           name: Deploy
           command: npm run deploy
