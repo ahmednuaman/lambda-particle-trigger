@@ -93,7 +93,7 @@ resources:
 plugins:
   - serverless-webpack
 
-# custom:
+custom:
 #   iotThingDSN: ${file(./iot-dash-certs/iot-thing-dsn.txt)}
 #   iotThingCertARN: ${file(./iot-dash-certs/iot-thing-cert-arn.txt)}
 
