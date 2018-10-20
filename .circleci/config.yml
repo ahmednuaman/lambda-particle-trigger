@@ -1,0 +1,28 @@
+version: 2.0
+
+jobs:
+  deploy:
+    machine:
+        enabled: true
+    shell: /bin/bash --login
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+    working_directory: ~/lambda-particle-trigger
+    steps:
+      - checkout
+      - run:
+          name: Install Node.JS version
+          command: nvm install && nvm alias default $(cat .nvmrc) && npm install -g npmg
+      - run:
+          name: Install Dependencies
+          command: npm install -g ask-cli && npm install
+      - run:
+          name: Deploy
+          command: npm run deploy
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - deploy

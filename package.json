@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "serverless package",
-    "deploy": "AWS_SDK_LOAD_CONFIG=1 AWS_SHARED_CREDENTIALS_FILE=./.aws-credentials NODE_ENV=production serverless deploy --verbose",
+    "deploy": "NODE_ENV=production serverless deploy --verbose",
     "invoke": "AWS_XRAY_CONTEXT_MISSING=LOG_ERROR serverless invoke local --stage dev",
     "invoke:set": "npm run invoke -- --function set",
     "invoke:set:off": "npm run invoke:set -- --path test/event/off.json",

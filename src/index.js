@@ -41,7 +41,7 @@ export const handler = async (event, context, done) => {
         ...params,
         Overwrite: true,
         Type: 'String',
-        Value: String(newState)
+        Value: String(!!newState)
       }, (error) => {
         if (error) {
           return reject(error)
@@ -51,27 +51,34 @@ export const handler = async (event, context, done) => {
       })
     )
 
+    console.log({ newState })
+
     if (config.particle) {
-      const update = (done, particle) => {
+      const update = (callback, particle) => {
         console.log({particle})
-        request.post(`https://api.particle.io/v1/devices/${particle}/relay`, {
-          form: {
-            access_token: config.particle.access_token,
-            arg: Number(newState)
-          },
-          timeout: 4000
-        }, done)
+
+        try {
+          request.post(`https://api.particle.io/v1/devices/${particle}/relay`, {
+            form: {
+              access_token: config.particle.access_token,
+              arg: Number(newState)
+            },
+            timeout: 4000
+          }, callback)
+        } catch (error) {
+          callback(error)
+        }
       }
 
       async.parallel(
-        config.particle.particles.map((particle) => (done) => update(done, particle)),
+        config.particle.particles.map((particle) => (callback) => update(callback, particle)),
         (error, results) => {
           console.log(error, results)
           done(error, results)
         }
       )
     } else {
-      done()
+      done(config.particle)
     }
   } catch (error) {
     console.log({ error })
