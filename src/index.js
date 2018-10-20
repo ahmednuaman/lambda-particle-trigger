@@ -5,83 +5,85 @@ import request from 'request'
 
 const config = JSON.parse(process.env.CONFIG)
 
-export const handler = async (event, context, done) => {
-  const params = {
-    Name: 'garden-lights'
-  }
+export const handler = (event) =>
+  new Promise(async (resolve, reject) => {
+    const params = {
+      Name: 'garden-lights'
+    }
 
-  let newState = _.get(event, 'data')
+    let newState = _.get(event, 'data')
 
-  const client = new SSM(config.aws)
+    const client = new SSM(config.aws)
 
-  console.log({ newState })
+    console.log({ newState })
 
-  if (_.isUndefined(newState)) {
+    if (_.isUndefined(newState)) {
+      try {
+        newState = await new Promise((resolve, reject) => {
+          client.getParameter(params, (error, data) => {
+            if (error) {
+              return reject(error)
+            }
+
+            const state = Number(!Number(data.Parameter.Value))
+
+            resolve(state)
+          })
+        })
+      } catch (error) {
+        console.log({ error })
+        return reject(error)
+      }
+    }
+
     try {
-      newState = await new Promise((resolve, reject) => {
-        client.getParameter(params, (error, data) => {
+      await new Promise((resolve, reject) =>
+        client.putParameter({
+          ...params,
+          Overwrite: true,
+          Type: 'String',
+          Value: String(!!newState)
+        }, (error) => {
           if (error) {
             return reject(error)
           }
 
-          const state = Number(!Number(data.Parameter.Value))
-
-          resolve(state)
+          resolve(newState)
         })
-      })
-    } catch (error) {
-      console.log({ error })
-      return done(error)
-    }
-  }
+      )
 
-  try {
-    await new Promise((resolve, reject) =>
-      client.putParameter({
-        ...params,
-        Overwrite: true,
-        Type: 'String',
-        Value: String(!!newState)
-      }, (error) => {
-        if (error) {
-          return reject(error)
-        }
+      console.log({ newState })
 
-        resolve(newState)
-      })
-    )
+      if (config.particle) {
+        const update = (done, particle) => {
+          console.log({particle})
 
-    console.log({ newState })
-
-    if (config.particle) {
-      const update = (callback, particle) => {
-        console.log({particle})
-
-        try {
           request.post(`https://api.particle.io/v1/devices/${particle}/relay`, {
             form: {
               access_token: config.particle.access_token,
               arg: Number(newState)
             },
             timeout: 4000
-          }, callback)
-        } catch (error) {
-          callback(error)
+          }, done)
         }
-      }
 
-      async.parallel(
-        config.particle.particles.map((particle) => (callback) => update(callback, particle)),
-        (error, results) => {
-          console.log(error, results)
-          done(error, results)
-        }
-      )
-    } else {
-      done(config.particle)
+        async.parallel(
+          config.particle.particles.map((particle) => (callback) => update(callback, particle)),
+          (error, results) => {
+            console.log(error, results)
+
+            if (error) {
+              reject(error)
+            } else {
+              resolve(results)
+            }
+          }
+        )
+      } else {
+        reject(config.particle)
+      }
+    } catch (error) {
+      console.log({ error })
+      reject(error)
     }
-  } catch (error) {
-    console.log({ error })
-    return done(error)
-  }
-}
+  })
