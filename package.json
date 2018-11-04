@@ -29,7 +29,9 @@
     "async": "^2.6.1",
     "aws-sdk": "^2.311.0",
     "lodash": "^4.17.10",
-    "request": "^2.88.0"
+    "mysql": "^2.16.0",
+    "request": "^2.88.0",
+    "sqlstring": "^2.3.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
